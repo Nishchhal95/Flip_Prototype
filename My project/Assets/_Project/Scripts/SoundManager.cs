@@ -3,7 +3,8 @@ using UnityEngine;
 
 public class SoundManager : MonoBehaviour
 {
-    [SerializeField] private AudioSource mainAudioSource;
+    [SerializeField] private AudioSource flipAudioSource;
+    [SerializeField] private AudioSource otherAudioSource;
     [SerializeField] private List<AudioClip> audioClips;
 
     private void OnEnable()
@@ -24,32 +25,32 @@ public class SoundManager : MonoBehaviour
 
     private void PlayCardFlipAudio()
     {
-        PlayAudio(audioClips[0]);
+        PlayAudio(flipAudioSource, audioClips[0]);
     }
 
     private void PlayCorrectMatchAudio()
     {
-        PlayAudio(audioClips[1]);
+        PlayAudio(otherAudioSource, audioClips[1]);
     }
 
     private void PlayIncorrectMatchAudio()
     {
-        PlayAudio(audioClips[2]);
+        PlayAudio(otherAudioSource, audioClips[2]);
     }
 
     private void PlayGameOverAudio(int _)
     {
-        PlayAudio(audioClips[3]);
+        PlayAudio(otherAudioSource, audioClips[3]);
     }
 
-    private void PlayAudio(AudioClip audioClip)
+    private void PlayAudio(AudioSource audioSource, AudioClip audioClip)
     {
-        if (mainAudioSource.isPlaying)
+        if (audioSource.isPlaying)
         {
-            mainAudioSource.Stop();
+            audioSource.Stop();
         }
 
-        mainAudioSource.clip = audioClip;
-        mainAudioSource.Play();
+        audioSource.clip = audioClip;
+        audioSource.Play();
     }
 }

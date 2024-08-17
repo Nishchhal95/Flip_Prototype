@@ -48,6 +48,7 @@ public class GameController : MonoBehaviour
 
     private void GridItemClicked(GridItem gridItem)
     {
+        CardFlipped?.Invoke();
         clikedItemStack.Push(gridItem);
 
         if (clikedItemStack.Count >= 2)
