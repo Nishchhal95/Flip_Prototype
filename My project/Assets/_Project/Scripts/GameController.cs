@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class GameController : MonoBehaviour
@@ -12,12 +13,13 @@ public class GameController : MonoBehaviour
     public static Action IncorrectMatch;
     public static Action<int> GameOver;
     
-    [SerializeField] private GridItem firstItem;
-    [SerializeField] private GridItem secondItem;
+    // [SerializeField] private GridItem firstItem;
+    // [SerializeField] private GridItem secondItem;
     [SerializeField] private int score;
     [SerializeField] private int matchCount;
     [SerializeField] private int turnCount;
 
+    private Stack<GridItem> clikedItemStack = new();
     private bool IsGameOver = false;
     
     public void Init()
@@ -46,25 +48,38 @@ public class GameController : MonoBehaviour
 
     private void GridItemClicked(GridItem gridItem)
     {
-        if (IsGameOver)
+        clikedItemStack.Push(gridItem);
+
+        if (clikedItemStack.Count >= 2)
         {
-            return;
+            GridItem firstItem = clikedItemStack.Pop();
+            GridItem secondItem = clikedItemStack.Pop();
+
+            StartCoroutine(CheckMatchRoutine(firstItem, secondItem));
         }
-        
-        CardFlipped?.Invoke();
-        if (firstItem == null)
-        {
-            firstItem = gridItem;
-            return;
-        }
-        
-        secondItem = gridItem;
-        StartCoroutine(CheckMatchRoutine());
     }
 
-    private IEnumerator CheckMatchRoutine()
+    // private void GridItemClicked(GridItem gridItem)
+    // {
+    //     if (IsGameOver)
+    //     {
+    //         return;
+    //     }
+    //     
+    //     CardFlipped?.Invoke();
+    //     if (firstItem == null)
+    //     {
+    //         firstItem = gridItem;
+    //         return;
+    //     }
+    //     
+    //     secondItem = gridItem;
+    //     StartCoroutine(CheckMatchRoutine());
+    // }
+
+    private IEnumerator CheckMatchRoutine(GridItem firstItem, GridItem secondItem)
     {
-        yield return new WaitForSecondsRealtime(.3f);
+        yield return new WaitForSecondsRealtime(.2f);
         if (firstItem.ID == secondItem.ID)
         {
             score += 10;
@@ -82,14 +97,11 @@ public class GameController : MonoBehaviour
         }
         else
         {
-            yield return new WaitForSecondsRealtime(.5f);
+            yield return new WaitForSecondsRealtime(.3f);
             firstItem.Hide();
             secondItem.Hide();
             IncorrectMatch?.Invoke();
         }
-
-        firstItem = null;
-        secondItem = null;
         turnCount++;
         TurnCountChanged?.Invoke(turnCount);
     }
