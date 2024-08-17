@@ -10,6 +10,8 @@ public class GameUIController : MonoBehaviour
     [SerializeField] private GameObject gameOverUIPanel;
     [SerializeField] private Button restartGameButton;
     [SerializeField] private TMP_Text gameOverScoreTextField;
+    [SerializeField] private Button saveGameButton;
+    [SerializeField] private GameController gameController;
 
     private void OnEnable()
     {
@@ -18,6 +20,7 @@ public class GameUIController : MonoBehaviour
         GameController.GameOver += OnGameOver;
         
         restartGameButton.onClick.AddListener(RestartGameButtonClicked);
+        saveGameButton.onClick.AddListener(SaveGameButtonClicked);
     }
 
     private void OnDisable()
@@ -27,6 +30,7 @@ public class GameUIController : MonoBehaviour
         GameController.GameOver -= OnGameOver;
         
         restartGameButton.onClick.RemoveListener(RestartGameButtonClicked);
+        saveGameButton.onClick.RemoveListener(SaveGameButtonClicked);
     }
 
     private void OnScoreChanged(int score)
@@ -49,5 +53,10 @@ public class GameUIController : MonoBehaviour
     {
         // Loads the current scene
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    private void SaveGameButtonClicked()
+    {
+        gameController.SaveState();
     }
 }

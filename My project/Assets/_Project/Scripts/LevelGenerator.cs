@@ -6,12 +6,14 @@ public class LevelGenerator : MonoBehaviour
 {
     public static LevelGenerator Instance { get; private set; }
     
+    public int numberOfRows = 4;
+    public int numberOfColumns = 5;
+    public int gameSeed = -1;
+    
     [SerializeField] private int itemWidth = 200;
     [SerializeField] private int itemHeight = 200;
     [SerializeField] private int itemXGap = 100;
     [SerializeField] private int itemYGap = 100;
-    [SerializeField] private int numberOfRows = 4;
-    [SerializeField] private int numberOfColumns = 5;
     [SerializeField] private bool stylizedHide = false;
     
     [SerializeField] private GameController gameController;
@@ -22,7 +24,7 @@ public class LevelGenerator : MonoBehaviour
     public GridItem[,] GridItemsArray { get; private set; }
     public int InGameCardCount { get; private set; }
     private List<Card> inGameCards = new List<Card>();
-
+    private GameState loadedGameState;
 
     private void Awake()
     {
@@ -38,6 +40,20 @@ public class LevelGenerator : MonoBehaviour
 
     private void Start()
     {
+        if (PersistanceManager.loadGame)
+        {
+            loadedGameState = PersistanceManager.Load();
+            numberOfRows = loadedGameState.Rows;
+            numberOfColumns = loadedGameState.Columns;
+            gameSeed = loadedGameState.Seed;
+
+            gameController.LoadGame(loadedGameState.Score, loadedGameState.TurnCount);
+        }
+        else
+        {
+            gameSeed = Random.Range(0, 9999);
+        }
+
         SetupCards();
         SpawnLevel();
         StartCoroutine(HideGridItemsRoutine());
@@ -48,7 +64,7 @@ public class LevelGenerator : MonoBehaviour
         LoadCards();
         
         List<Card> copyCards = new List<Card>(cards);
-        Shuffle(copyCards);
+        Shuffle(copyCards, gameSeed);
         
         InGameCardCount = (numberOfRows * numberOfColumns) / 2;
         inGameCards = new List<Card>();
@@ -57,7 +73,7 @@ public class LevelGenerator : MonoBehaviour
             inGameCards.Add(copyCards[i]);
         }
         inGameCards.AddRange(inGameCards);
-        Shuffle(inGameCards);
+        Shuffle(inGameCards, gameSeed);
     }
 
     private void LoadCards()
@@ -97,6 +113,11 @@ public class LevelGenerator : MonoBehaviour
                 
                 GridItemsArray[i, j] = gridItem;
                 cardIndex++;
+
+                if (PersistanceManager.loadGame)
+                {
+                    gridItem.gameObject.SetActive(loadedGameState.CardState[i * numberOfColumns + j]);
+                }
             }
         }
     }
@@ -109,7 +130,10 @@ public class LevelGenerator : MonoBehaviour
             for (int j = 0; j < numberOfColumns; j++)
             {
                 GridItem gridItem = GridItemsArray[i, j];
-                gridItem.Hide();
+                if (gridItem.gameObject.activeSelf)
+                {
+                    gridItem.Hide();
+                }
                 if (stylizedHide)
                 {
                     yield return new WaitForSecondsRealtime(0.01f);
@@ -142,9 +166,9 @@ public class LevelGenerator : MonoBehaviour
         return true;
     }
     
-    private void Shuffle<T>(List<T> list)  
+    private void Shuffle<T>(List<T> list, int seed)  
     {  
-        System.Random rng = new System.Random(); 
+        System.Random rng = new System.Random(seed); 
         int n = list.Count;  
         while (n > 1) {  
             n--;  

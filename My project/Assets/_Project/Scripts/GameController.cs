@@ -106,4 +106,45 @@ public class GameController : MonoBehaviour
         turnCount++;
         TurnCountChanged?.Invoke(turnCount);
     }
+
+    public void SaveState()
+    {
+        GameState gameState = new GameState()
+        {
+            Score = score,
+            TurnCount = turnCount,
+            Rows = LevelGenerator.Instance.numberOfRows,
+            Columns = LevelGenerator.Instance.numberOfColumns,
+            Seed = LevelGenerator.Instance.gameSeed
+        };
+
+        gameState.CardState = new List<bool>();
+        for (int i = 0; i < LevelGenerator.Instance.GridItemsArray.GetLength(0); i++)
+        {
+            for (int j = 0; j < LevelGenerator.Instance.GridItemsArray.GetLength(1); j++)
+            {
+                gameState.CardState.Add(LevelGenerator.Instance.GridItemsArray[i, j].gameObject.activeSelf);
+            }
+        }
+        PersistanceManager.Save(gameState);
+    }
+
+    public void LoadGame(int score, int turnCount)
+    {
+        this.score = score;
+        this.turnCount = turnCount;
+        
+        ScoreChanged?.Invoke(score);
+        TurnCountChanged?.Invoke(turnCount);
+    }
+}
+
+public class GameState
+{
+    public int Score;
+    public int TurnCount;
+    public int Rows;
+    public int Columns;
+    public int Seed;
+    public List<bool> CardState;
 }
