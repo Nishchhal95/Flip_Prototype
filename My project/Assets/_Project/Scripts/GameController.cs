@@ -1,8 +1,17 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
+    public static Action<int> ScoreChanged;
+    public static Action<int> TurnCountChanged;
+
+    public static Action CardFlipped;
+    public static Action CorrectMatch;
+    public static Action IncorrectMatch;
+    public static Action GameOver;
+    
     [SerializeField] private GridItem firstItem;
     [SerializeField] private GridItem secondItem;
     [SerializeField] private int score;
@@ -39,6 +48,7 @@ public class GameController : MonoBehaviour
 
     private IEnumerator GridItemClickedRoutine(GridItem gridItem)
     {
+        CardFlipped?.Invoke();
         if (firstItem == null)
         {
             firstItem = gridItem;
@@ -51,16 +61,20 @@ public class GameController : MonoBehaviour
         {
             // Keep it open and add Score
             score += 10;
+            ScoreChanged?.Invoke(score);
+            CorrectMatch?.Invoke();
         }
         else
         {
             yield return new WaitForSecondsRealtime(.5f);
             firstItem.Hide();
             secondItem.Hide();
+            IncorrectMatch?.Invoke();
         }
 
         firstItem = null;
         secondItem = null;
         turnCount++;
+        TurnCountChanged?.Invoke(turnCount);
     }
 }
