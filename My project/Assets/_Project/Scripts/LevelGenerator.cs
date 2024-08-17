@@ -17,10 +17,12 @@ public class LevelGenerator : MonoBehaviour
     [SerializeField] private GameController gameController;
     [SerializeField] private RectTransform content;
     [SerializeField] private GridItem gridItemPrefab;
-    [SerializeField] private List<Sprite> icons;
+    [SerializeField] private List<Card> cards;
 
     public GridItem[,] GridItemsArray { get; private set; }
-    private List<Sprite> subIcons = new List<Sprite>();
+    public int InGameCardCount { get; private set; }
+    private List<Card> inGameCards = new List<Card>();
+
 
     private void Awake()
     {
@@ -36,28 +38,46 @@ public class LevelGenerator : MonoBehaviour
 
     private void Start()
     {
-        SetupIcons();
+        SetupCards();
         SpawnLevel();
         StartCoroutine(HideGridItemsRoutine());
         SetupGameController();
     }
-    private void SetupIcons()
+    private void SetupCards()
     {
-        Shuffle(icons);
-        int subIconArrayCount = numberOfRows * numberOfColumns;
-        for (int i = 0; i < subIconArrayCount / 2; i++)
+        LoadCards();
+        
+        List<Card> copyCards = new List<Card>(cards);
+        Shuffle(copyCards);
+        
+        InGameCardCount = (numberOfRows * numberOfColumns) / 2;
+        inGameCards = new List<Card>();
+        for (int i = 0; i < InGameCardCount; i++)
         {
-            subIcons.Add(icons[i]);
+            inGameCards.Add(copyCards[i]);
         }
+        inGameCards.AddRange(inGameCards);
+        Shuffle(inGameCards);
+    }
 
-        subIcons.AddRange(subIcons);
-        Shuffle(subIcons);
+    private void LoadCards()
+    {
+        cards = new List<Card>();
+        Sprite[] iconSprites = Resources.LoadAll<Sprite>("Icons");
+        for (int i = 0; i < iconSprites.Length; i++)
+        {
+            cards.Add(new Card()
+            {
+                ID = i,
+                Sprite = iconSprites[i]
+            });
+        }
     }
 
     private void SpawnLevel()
     {
         GridItemsArray = new GridItem[numberOfRows, numberOfColumns];
-        int iconIndex = 0;
+        int cardIndex = 0;
         Vector2 startingPoint =
             new Vector2(-content.rect.width / 2 + itemWidth / 2, content.rect.height / 2 - itemHeight / 2);
 
@@ -66,8 +86,7 @@ public class LevelGenerator : MonoBehaviour
             for (int j = 0; j < numberOfColumns; j++)
             {
                 GridItem gridItem = Instantiate(gridItemPrefab, content);
-                gridItem.SetIcon(subIcons[iconIndex]);
-                gridItem.iconID = subIcons[iconIndex].name;
+                gridItem.SetCard(inGameCards[cardIndex]);
                 
                 RectTransform gridItemRectTransform = (RectTransform)gridItem.transform;
                 Vector2 gridItemPosition = startingPoint + new Vector2((itemWidth + itemXGap) * j, (-itemHeight - itemYGap) * i);
@@ -77,7 +96,7 @@ public class LevelGenerator : MonoBehaviour
                 gridItem.ArrayIndex = new Vector2Int(i, j);
                 
                 GridItemsArray[i, j] = gridItem;
-                iconIndex++;
+                cardIndex++;
             }
         }
     }
@@ -103,7 +122,6 @@ public class LevelGenerator : MonoBehaviour
     {
         gameController.Init();
     }
-
     
     public GridItem GetItemByIndex(Vector2Int arrayIndex)
     {
@@ -124,7 +142,7 @@ public class LevelGenerator : MonoBehaviour
         return true;
     }
     
-    private void Shuffle(List<Sprite> list)  
+    private void Shuffle<T>(List<T> list)  
     {  
         System.Random rng = new System.Random(); 
         int n = list.Count;  

@@ -38,7 +38,7 @@ public class SoundManager : MonoBehaviour
         PlayAudio(audioClips[2]);
     }
 
-    private void PlayGameOverAudio()
+    private void PlayGameOverAudio(int _)
     {
         PlayAudio(audioClips[3]);
     }

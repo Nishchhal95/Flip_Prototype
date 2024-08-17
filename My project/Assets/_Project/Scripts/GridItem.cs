@@ -7,16 +7,17 @@ using UnityEngine.UI;
 public class GridItem : MonoBehaviour, IPointerClickHandler
 {
     public Action<GridItem> OnItemClicked;
-    [field: SerializeField] public string iconID { get; set; }
+    [field: SerializeField] public int ID { get; set; }
     [field: SerializeField] public Vector2Int ArrayIndex { get; set; }
     [SerializeField] private Image icon;
     [SerializeField] private bool isShown;
 
     private Coroutine flipRoutnie;
     
-    public void SetIcon(Sprite iconSprite)
+    public void SetCard(Card card)
     {
-        icon.sprite = iconSprite;
+        ID = card.ID;
+        icon.sprite = card.Sprite;
     }
 
     public void Show()
@@ -81,4 +82,11 @@ public class GridItem : MonoBehaviour, IPointerClickHandler
         
         transform.localScale = startScale;
     }
+}
+
+[Serializable]
+public class Card
+{
+    public int ID;
+    public Sprite Sprite;
 }

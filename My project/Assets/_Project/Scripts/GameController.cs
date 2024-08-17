@@ -10,12 +10,15 @@ public class GameController : MonoBehaviour
     public static Action CardFlipped;
     public static Action CorrectMatch;
     public static Action IncorrectMatch;
-    public static Action GameOver;
+    public static Action<int> GameOver;
     
     [SerializeField] private GridItem firstItem;
     [SerializeField] private GridItem secondItem;
     [SerializeField] private int score;
+    [SerializeField] private int matchCount;
     [SerializeField] private int turnCount;
+
+    private bool IsGameOver = false;
     
     public void Init()
     {
@@ -43,26 +46,39 @@ public class GameController : MonoBehaviour
 
     private void GridItemClicked(GridItem gridItem)
     {
-        StartCoroutine(GridItemClickedRoutine(gridItem));
-    }
-
-    private IEnumerator GridItemClickedRoutine(GridItem gridItem)
-    {
+        if (IsGameOver)
+        {
+            return;
+        }
+        
         CardFlipped?.Invoke();
         if (firstItem == null)
         {
             firstItem = gridItem;
-            yield break;
+            return;
         }
-
+        
         secondItem = gridItem;
+        StartCoroutine(CheckMatchRoutine());
+    }
 
-        if (firstItem.iconID == secondItem.iconID)
+    private IEnumerator CheckMatchRoutine()
+    {
+        yield return new WaitForSecondsRealtime(.3f);
+        if (firstItem.ID == secondItem.ID)
         {
-            // Keep it open and add Score
             score += 10;
+            matchCount++;
             ScoreChanged?.Invoke(score);
             CorrectMatch?.Invoke();
+            firstItem.gameObject.SetActive(false);
+            secondItem.gameObject.SetActive(false);
+
+            if (matchCount >= LevelGenerator.Instance.InGameCardCount)
+            {
+                GameOver?.Invoke(score);
+                IsGameOver = true;
+            }
         }
         else
         {
